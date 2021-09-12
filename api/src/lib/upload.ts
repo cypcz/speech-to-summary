@@ -15,6 +15,7 @@ ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 interface Response {
   uri: string;
   duration: number;
+  fileName: string;
 }
 
 export const transcribeFileAndPipeToGcs = async (
@@ -60,6 +61,7 @@ export const transcribeFileAndPipeToGcs = async (
         resolve({
           uri: `gs://${bucket.name}/${fileNameWithExt}`,
           duration,
+          fileName,
         });
       });
   });

@@ -3,6 +3,7 @@ import { google } from "@google-cloud/speech/build/protos/protos";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { RouteGenericInterface } from "fastify/types/route";
 import { IncomingMessage, Server, ServerResponse } from "http";
+import { prisma } from "../prisma";
 import { transcribeFileAndPipeToGcs } from "./upload";
 
 const client = new SpeechClient();
@@ -11,6 +12,7 @@ interface Params {
   uri: string;
   duration: number;
   languageCode: string;
+  fileName: string;
 }
 
 export const initiateSummary = async (
@@ -23,19 +25,24 @@ export const initiateSummary = async (
     unknown
   >
 ) => {
-  const { uri, duration } = await transcribeFileAndPipeToGcs(request, reply);
-  const transcription = await initiateSpeechToText({
+  const { uri, duration, fileName } = await transcribeFileAndPipeToGcs(
+    request,
+    reply
+  );
+  const task = await initiateSpeechToText({
     uri,
     duration,
+    fileName,
     languageCode: "en-US",
   });
 
-  reply.send(transcription);
+  reply.send(task);
 };
 
 const initiateSpeechToText = async ({
   uri,
   languageCode,
+  fileName,
   duration,
 }: Params) => {
   const speechRequest:
@@ -51,26 +58,49 @@ const initiateSpeechToText = async ({
     },
   };
 
-  let result:
-    | google.cloud.speech.v1.IRecognizeResponse
-    | google.cloud.speech.v1.ILongRunningRecognizeResponse;
+  const [operation] = await client.longRunningRecognize(speechRequest);
 
-  if (duration < 60) {
-    const [res] = await client.recognize(speechRequest);
-    result = res;
-  } else {
-    const [operation, longRunningOperation] = await client.longRunningRecognize(
-      speechRequest
-    );
+  operation.name && pollForTranscribeResult(operation.name);
 
-    const [res] = await operation.promise();
-    result = res;
-  }
+  return prisma.task.create({
+    data: {
+      name: fileName,
+      fileUri: uri,
+      user: { connect: { id: "cktait8sg0012n5s7zs3e91wq" } },
+    },
+    select: { id: true, name: true, userId: true },
+  });
+};
 
-  const totalBilledTime = result.totalBilledTime;
-  const transcription = result?.results
-    ?.map((r) => r.alternatives?.[0].transcript)
-    .join("\n");
+const pollForTranscribeResult = (name: string) => {
+  let runCount = 0;
+  const timer = setInterval(async () => {
+    console.log("Polling for long running progress " + name);
+    const response = await client.checkLongRunningRecognizeProgress(name);
 
-  return transcription;
+    runCount++;
+
+    if (response.done) {
+      console.log(`Result for long running progress ${name} ready`);
+
+      const { results, totalBilledTime } = response.result as any;
+
+      const transcription = results
+        ?.map((r: any) => r.alternatives?.[0].transcript)
+        .join("\n");
+
+      // go for summary
+      // @TODO: write transcription to db
+
+      clearInterval(timer);
+    }
+
+    if (runCount >= 3) {
+      console.log(
+        `Result ${name} was not ready in ${runCount} tries. Aborting..`
+      );
+
+      clearInterval(timer);
+    }
+  }, 30000);
 };

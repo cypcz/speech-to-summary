@@ -1,10 +1,8 @@
-import { PrismaClient } from "@prisma/client";
 import fastify from "fastify";
 import cors from "fastify-cors";
 import fastifyMultipart from "fastify-multipart";
 import { initiateSummary } from "./lib/speech";
-
-const prisma = new PrismaClient();
+import { prisma } from "./prisma";
 
 const server = fastify({ logger: true });
 

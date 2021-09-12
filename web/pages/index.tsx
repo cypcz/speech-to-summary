@@ -15,14 +15,20 @@ const Home: NextPage = () => {
     const formData = new FormData();
     formData.append("file", file);
 
-    const xhttp = new XMLHttpRequest();
+    const xhr = new XMLHttpRequest();
 
-    xhttp.upload.addEventListener("progress", (ev) => {
+    xhr.upload.addEventListener("progress", (ev) => {
       setLoadingProgress(ev.loaded / ev.total);
     });
 
-    xhttp.open("POST", `${process.env.NEXT_PUBLIC_API_URL}/initiate-summary`);
-    xhttp.send(formData);
+    xhr.onreadystatechange = () => {
+      if (xhr.readyState === XMLHttpRequest.DONE) {
+        console.log(JSON.parse(xhr.response));
+      }
+    };
+
+    xhr.open("POST", `${process.env.NEXT_PUBLIC_API_URL}/initiate-summary`);
+    xhr.send(formData);
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
