@@ -1,0 +1,4 @@
+node_modules
+admin-service-account.json
+dist
+.env
