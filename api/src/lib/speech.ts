@@ -1,10 +1,13 @@
+import { TaskStatus } from ".prisma/client";
 import { SpeechClient } from "@google-cloud/speech";
 import { google } from "@google-cloud/speech/build/protos/protos";
-import { FastifyReply, FastifyRequest } from "fastify";
-import { RouteGenericInterface } from "fastify/types/route";
-import { IncomingMessage, Server, ServerResponse } from "http";
+import { Request, Response } from "express";
 import { prisma } from "../prisma";
-import { transcribeFileAndPipeToGcs } from "./upload";
+import { getSummaries } from "./openai";
+import {
+  getYoutubeAudioAndPipeToGcs,
+  transcribeFileAndPipeToGcs,
+} from "./upload";
 
 const client = new SpeechClient();
 
@@ -15,20 +18,15 @@ interface Params {
   fileName: string;
 }
 
-export const initiateSummary = async (
-  request: FastifyRequest<RouteGenericInterface, Server, IncomingMessage>,
-  reply: FastifyReply<
-    Server,
-    IncomingMessage,
-    ServerResponse,
-    RouteGenericInterface,
-    unknown
-  >
+export const initiateSummaryFromUpload = async (
+  req: Request,
+  res: Response
 ) => {
   const { uri, duration, fileName } = await transcribeFileAndPipeToGcs(
-    request,
-    reply
+    req,
+    res
   );
+
   const task = await initiateSpeechToText({
     uri,
     duration,
@@ -36,7 +34,26 @@ export const initiateSummary = async (
     languageCode: "en-US",
   });
 
-  reply.send(task);
+  res.json(task);
+};
+
+export const initiateSummaryFromYoutube = async (
+  req: Request,
+  res: Response
+) => {
+  const { uri, duration, fileName } = await getYoutubeAudioAndPipeToGcs(
+    req,
+    res
+  );
+
+  const task = await initiateSpeechToText({
+    uri,
+    duration,
+    fileName,
+    languageCode: "en-US",
+  });
+
+  res.json(task);
 };
 
 const initiateSpeechToText = async ({
@@ -60,42 +77,61 @@ const initiateSpeechToText = async ({
 
   const [operation] = await client.longRunningRecognize(speechRequest);
 
-  operation.name && pollForTranscribeResult(operation.name);
-
-  return prisma.task.create({
+  const task = await prisma.task.create({
     data: {
       name: fileName,
       fileUri: uri,
-      user: { connect: { id: "cktait8sg0012n5s7zs3e91wq" } },
+      status: TaskStatus.WAITING_FOR_TRANSCRIPT,
+      user: { connect: { id: "cktlsjpkh0009wzs723150oss" } },
     },
     select: { id: true, name: true, userId: true },
   });
+
+  operation.name && pollForTranscribeResult(operation.name, task.id);
+
+  return task;
 };
 
-const pollForTranscribeResult = (name: string) => {
+const pollForTranscribeResult = (name: string, taskId: string) => {
   let runCount = 0;
   const timer = setInterval(async () => {
-    console.log("Polling for long running progress " + name);
-    const response = await client.checkLongRunningRecognizeProgress(name);
-
     runCount++;
+
+    console.log(`Try ${runCount} to get long running progress result ${name}`);
+
+    const response = await client.checkLongRunningRecognizeProgress(name);
 
     if (response.done) {
       console.log(`Result for long running progress ${name} ready`);
 
       const { results, totalBilledTime } = response.result as any;
 
-      const transcription = results
+      const transcript = results
         ?.map((r: any) => r.alternatives?.[0].transcript)
         .join("\n");
 
-      // go for summary
-      // @TODO: write transcription to db
+      console.log(`Querying the summary..`);
+
+      const summaries = await getSummaries(transcript);
+
+      console.log(`Summary received, updating task..`);
+
+      await prisma.task.update({
+        where: { id: taskId },
+        data: {
+          transcript,
+          secondsBilled: totalBilledTime.seconds.low,
+          summaries: { set: summaries },
+          status: TaskStatus.DONE,
+        },
+      });
+
+      console.log(`Finished`);
 
       clearInterval(timer);
     }
 
-    if (runCount >= 3) {
+    if (runCount > 15) {
       console.log(
         `Result ${name} was not ready in ${runCount} tries. Aborting..`
       );

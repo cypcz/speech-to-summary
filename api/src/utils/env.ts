@@ -1,5 +1,7 @@
 interface IProcessEnv {
   GCS_BUCKET_NAME: string;
+  OPEN_AI_API_KEY: string;
+  SESSION_SECRET: string;
 }
 
 declare global {
@@ -9,7 +11,7 @@ declare global {
 }
 
 const getEnvVars = () => {
-  const requiredEnvs = ["GCS_BUCKET_NAME"];
+  const requiredEnvs = ["GCS_BUCKET_NAME", "OPEN_AI_API_KEY", "SESSION_SECRET"];
 
   const missingEnvVars = requiredEnvs.reduce((acc, envName) => {
     if (!process.env[envName]) {
@@ -30,4 +32,5 @@ const getEnvVars = () => {
   );
 };
 
-export const { GCS_BUCKET_NAME } = getEnvVars();
+export const { GCS_BUCKET_NAME, OPEN_AI_API_KEY, SESSION_SECRET } =
+  getEnvVars();

@@ -11,8 +11,10 @@ generator client {
 }
 
 model User {
-  id   String @id @default(cuid())
-  name String
+  id           String @id @default(cuid())
+  name         String
+  email        String @unique
+  passwordHash String
 
   tasks Task[]
 
@@ -21,18 +23,22 @@ model User {
 }
 
 model Task {
-  id            String  @id @default(cuid())
+  id            String     @id @default(cuid())
   name          String
   fileUri       String
   transcript    String?
-  summary       String?
-  confidence    Float?
-  billedSeconds Int?
-
+  summaries     String[]
+  secondsBilled Int?
+  status        TaskStatus
 
   user   User   @relation(fields: [userId], references: [id])
   userId String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
+}
+
+enum TaskStatus {
+  WAITING_FOR_TRANSCRIPT
+  DONE
 }

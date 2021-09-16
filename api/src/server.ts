@@ -1,42 +1,30 @@
-import fastify from "fastify";
-import cors from "fastify-cors";
-import fastifyMultipart from "fastify-multipart";
-import { initiateSummary } from "./lib/speech";
-import { prisma } from "./prisma";
+import cors from "cors";
+import express from "express";
+import session from "express-session";
+import { passport } from "./lib/auth";
+import authRouter from "./routes/auth";
+import summaryRouter from "./routes/summary";
+import taskRouter from "./routes/task";
+import { SESSION_SECRET } from "./utils/env";
 
-const server = fastify({ logger: true });
+const app = express();
 
-server.register(cors, {
-  origin: "*",
-});
-server.register(fastifyMultipart);
+app.use(express.json());
+// app.use(pino());
+app.use(cors({ origin: "*" }));
+app.use(
+  session({
+    secret: SESSION_SECRET,
+    cookie: { secure: true, maxAge: 1000 * 60 * 60 * 24 * 10 },
+    resave: false,
+    saveUninitialized: false,
+  })
+);
+app.use(passport.initialize());
+app.use(passport.session());
 
-server.get("/", async (request, reply) => {
-  return prisma.user.findMany();
-});
+app.use("/auth", authRouter);
+app.use("/summary", summaryRouter);
+app.use("/tasks", taskRouter);
 
-server.post("/initiate-summary", initiateSummary);
-
-// server.get<{ Querystring: TGetSignedUrlParams }>(
-//   "/signed-url",
-//   {
-//     schema: {
-//       querystring: GetSignedUrlParams,
-//     },
-//   },
-//   (request, reply) => {
-//     const { fileName, contentType } = request.query;
-//     reply.send(generateV4UploadSignedUrl({ fileName, contentType }));
-//   }
-// );
-
-const start = async () => {
-  try {
-    await server.listen(4000);
-  } catch (err) {
-    server.log.error(err);
-    process.exit(1);
-  }
-};
-
-start();
+app.listen(4000);
