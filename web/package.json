@@ -9,12 +9,15 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@types/styled-components": "^5.1.14",
     "axios": "^0.21.4",
+    "babel-plugin-styled-components": "^1.13.2",
     "next": "11.1.2",
     "react": "17.0.2",
     "react-dom": "17.0.2",
     "react-dropzone": "^11.3.4",
-    "react-query": "^3.22.0"
+    "react-query": "^3.22.0",
+    "styled-components": "^5.3.1"
   },
   "devDependencies": {
     "@types/react": "17.0.20",

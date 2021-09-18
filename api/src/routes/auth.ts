@@ -5,10 +5,17 @@ import { prisma } from "../prisma";
 
 const router = express.Router();
 
-router.post("/login", passport.authenticate("local"), async (req, res) => {
-  console.log(req.user);
+router.get("/me", async (req, res) => {
+  res.json(req.user);
+});
 
-  res.json({ status: "ok" });
+router.post("/login", passport.authenticate("local"), async (req, res) => {
+  res.json();
+});
+
+router.post("/logout", async (req, res) => {
+  req.logout();
+  res.json();
 });
 
 router.post("/register", async (req, res) => {

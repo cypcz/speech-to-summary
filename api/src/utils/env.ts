@@ -1,7 +1,10 @@
 interface IProcessEnv {
+  DATABASE_URL: string;
   GCS_BUCKET_NAME: string;
   OPEN_AI_API_KEY: string;
   SESSION_SECRET: string;
+  SESSION_ORIGIN: string;
+  NODE_ENV: "production" | "development";
 }
 
 declare global {
@@ -11,7 +14,14 @@ declare global {
 }
 
 const getEnvVars = () => {
-  const requiredEnvs = ["GCS_BUCKET_NAME", "OPEN_AI_API_KEY", "SESSION_SECRET"];
+  const requiredEnvs = [
+    "DATABASE_URL",
+    "GCS_BUCKET_NAME",
+    "OPEN_AI_API_KEY",
+    "SESSION_SECRET",
+    "SESSION_ORIGIN",
+    "NODE_ENV",
+  ];
 
   const missingEnvVars = requiredEnvs.reduce((acc, envName) => {
     if (!process.env[envName]) {
@@ -32,5 +42,11 @@ const getEnvVars = () => {
   );
 };
 
-export const { GCS_BUCKET_NAME, OPEN_AI_API_KEY, SESSION_SECRET } =
-  getEnvVars();
+export const {
+  DATABASE_URL,
+  GCS_BUCKET_NAME,
+  OPEN_AI_API_KEY,
+  SESSION_SECRET,
+  NODE_ENV,
+  SESSION_ORIGIN,
+} = getEnvVars();

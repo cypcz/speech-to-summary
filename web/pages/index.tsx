@@ -2,12 +2,34 @@ import type { NextPage } from "next";
 import Head from "next/head";
 import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
-import { useQuery } from "react-query";
-import { getData, GET_DATA } from "../api/requests";
+import { useMutation, useQuery, useQueryClient } from "react-query";
+import {
+  getMe,
+  getTasks,
+  GET_ME,
+  GET_TASKS,
+  login,
+  logout,
+} from "../api/requests";
 
 const Home: NextPage = () => {
-  const { data } = useQuery(GET_DATA, getData);
   const [loadingProgress, setLoadingProgress] = useState<number | null>(null);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const queryClient = useQueryClient();
+  const { data: me } = useQuery([GET_ME], getMe);
+  const { data: tasks } = useQuery([GET_TASKS], getTasks);
+  const { mutate: handleLogin } = useMutation(login, {
+    onSuccess: () => {
+      queryClient.invalidateQueries([GET_ME]);
+    },
+  });
+  const { mutate: handleLogout } = useMutation(logout, {
+    onSuccess: () => {
+      queryClient.invalidateQueries([GET_ME]);
+    },
+  });
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
@@ -27,9 +49,11 @@ const Home: NextPage = () => {
       }
     };
 
-    xhr.open("POST", `${process.env.NEXT_PUBLIC_API_URL}/initiate-summary`);
+    xhr.open("POST", `${process.env.NEXT_PUBLIC_API_URL}/summary/upload`);
     xhr.send(formData);
   }, []);
+
+  console.log(me);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
@@ -42,6 +66,20 @@ const Home: NextPage = () => {
       </Head>
 
       <main>
+        {me ? (
+          <button onClick={() => handleLogout()}>logout</button>
+        ) : (
+          <div>
+            <input onChange={(e) => setEmail(e.target.value)} value={email} />
+            <input
+              onChange={(e) => setPassword(e.target.value)}
+              value={password}
+            />
+            <button onClick={() => handleLogin({ email, password })}>
+              login
+            </button>
+          </div>
+        )}
         <div {...getRootProps()}>
           <input {...getInputProps()} />
           {isDragActive ? (
@@ -54,6 +92,18 @@ const Home: NextPage = () => {
         {loadingProgress && (
           <div>Progress: {(loadingProgress * 100).toFixed(0)}%</div>
         )}
+
+        {tasks?.map((task) => (
+          <div
+            key={task.id}
+            style={{ marginBottom: "1rem", borderBottom: "2px solid black" }}
+          >
+            <p>Transcript: {task.transcript}</p>
+            {task.summaries.map((s, i) => (
+              <p key={i}>{`Summary ${i}: ${s}`}</p>
+            ))}
+          </div>
+        ))}
       </main>
 
       <footer>footer</footer>
