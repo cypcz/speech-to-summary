@@ -3,7 +3,10 @@ interface IProcessEnv {
   GCS_BUCKET_NAME: string;
   OPEN_AI_API_KEY: string;
   SESSION_SECRET: string;
-  SESSION_ORIGIN: string;
+  FE_ORIGIN: string;
+  BE_ORIGIN: string;
+  GOOGLE_CLIENT_ID: string;
+  GOOGLE_CLIENT_SECRET: string;
   NODE_ENV: "production" | "development";
 }
 
@@ -19,8 +22,11 @@ const getEnvVars = () => {
     "GCS_BUCKET_NAME",
     "OPEN_AI_API_KEY",
     "SESSION_SECRET",
-    "SESSION_ORIGIN",
+    "FE_ORIGIN",
+    "BE_ORIGIN",
     "NODE_ENV",
+    "GOOGLE_CLIENT_ID",
+    "GOOGLE_CLIENT_SECRET",
   ];
 
   const missingEnvVars = requiredEnvs.reduce((acc, envName) => {
@@ -48,5 +54,8 @@ export const {
   OPEN_AI_API_KEY,
   SESSION_SECRET,
   NODE_ENV,
-  SESSION_ORIGIN,
+  FE_ORIGIN,
+  BE_ORIGIN,
+  GOOGLE_CLIENT_ID,
+  GOOGLE_CLIENT_SECRET,
 } = getEnvVars();

@@ -5,9 +5,10 @@ export const axios = Axios.create({
   withCredentials: true,
 });
 
-type MeResult = { id: string; email: string; name: string }[];
+export type GetMeResult = { id: string; email: string; name: string }[];
 export const GET_ME = "/GET_ME";
-export const getMe = async () => (await axios.get<MeResult>("/auth/me")).data;
+export const getMe = async () =>
+  (await axios.get<GetMeResult>("/auth/me")).data;
 
 type GetTasksResult = { id: string; transcript: string; summaries: string[] }[];
 export const GET_TASKS = "/GET_TASKS";
@@ -19,7 +20,7 @@ type GetSignedUrlResult = string;
 export const getSignedUrl = async (params: GetSignedUrlParams) =>
   (await axios.get<GetSignedUrlResult>("/signed-url", { params })).data;
 
-type LoginParams = { email: string; password: string };
+export type LoginParams = { email: string; password: string };
 export const login = async ({ email, password }: LoginParams) =>
   (await axios.post("/auth/login", { email, password })).data;
 

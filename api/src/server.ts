@@ -3,15 +3,10 @@ import cors from "cors";
 import express from "express";
 import session from "express-session";
 import { passport } from "./lib/auth";
-import authRouter from "./routes/auth";
-import summaryRouter from "./routes/summary";
-import taskRouter from "./routes/task";
-import {
-  DATABASE_URL,
-  NODE_ENV,
-  SESSION_ORIGIN,
-  SESSION_SECRET,
-} from "./utils/env";
+import { router as authRouter } from "./routes/auth";
+import { router as summaryRouter } from "./routes/summary";
+import { router as taskRouter } from "./routes/task";
+import { DATABASE_URL, FE_ORIGIN, NODE_ENV, SESSION_SECRET } from "./utils/env";
 
 const SessionStore = PgStore(session);
 
@@ -19,7 +14,12 @@ const app = express();
 
 app.use(express.json());
 // app.use(pino());
-app.use(cors({ origin: SESSION_ORIGIN, credentials: true }));
+app.use(
+  cors({
+    origin: FE_ORIGIN,
+    credentials: true,
+  })
+);
 app.use(
   session({
     secret: SESSION_SECRET,
@@ -27,7 +27,7 @@ app.use(
       secure: NODE_ENV === "production",
       maxAge: 1000 * 60 * 60 * 24 * 10,
       httpOnly: true,
-      domain: NODE_ENV === "production" ? SESSION_ORIGIN : undefined,
+      domain: NODE_ENV === "production" ? FE_ORIGIN : undefined,
       path: "/",
       sameSite: NODE_ENV === "production",
     },
@@ -47,4 +47,6 @@ app.use("/auth", authRouter);
 app.use("/summary", summaryRouter);
 app.use("/tasks", taskRouter);
 
-app.listen(4000);
+app.listen(4000, () => {
+  console.log("Server listening on port 4000..");
+});

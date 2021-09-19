@@ -1,7 +1,13 @@
 import argon from "argon2";
 import passport from "passport";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { Strategy as LocalStrategy } from "passport-local";
 import { prisma } from "../prisma";
+import {
+  BE_ORIGIN,
+  GOOGLE_CLIENT_ID,
+  GOOGLE_CLIENT_SECRET,
+} from "../utils/env";
 
 const validatePassword = async (password: string, hash: string) => {
   return await argon.verify(hash, password);
@@ -18,7 +24,7 @@ passport.use(
     try {
       const user = await prisma.user.findUnique({ where: { email } });
 
-      if (!user) return cb(null, false);
+      if (!user?.passwordHash) return cb(null, false);
 
       if (await validatePassword(password, user.passwordHash))
         return cb(null, user);
@@ -28,6 +34,32 @@ passport.use(
       cb(err);
     }
   })
+);
+
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: GOOGLE_CLIENT_ID,
+      clientSecret: GOOGLE_CLIENT_SECRET,
+      callbackURL: `${BE_ORIGIN}/auth/google/callback`,
+    },
+    async (_accessToken, _refreshToken, profile, cb) => {
+      try {
+        const email = profile.emails?.[0].value;
+        if (!email) throw new Error("Missing email");
+        const name = profile.displayName;
+        const user = await prisma.user.upsert({
+          where: { email },
+          create: { email, googleId: profile.id, name },
+          update: { googleId: profile.id, name },
+        });
+
+        return cb(null, user);
+      } catch (err) {
+        return cb(err as string, false);
+      }
+    }
+  )
 );
 
 passport.serializeUser((user, cb) => {
