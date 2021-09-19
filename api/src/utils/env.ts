@@ -7,6 +7,8 @@ interface IProcessEnv {
   BE_ORIGIN: string;
   GOOGLE_CLIENT_ID: string;
   GOOGLE_CLIENT_SECRET: string;
+  FACEBOOK_APP_ID: string;
+  FACEBOOK_APP_SECRET: string;
   NODE_ENV: "production" | "development";
 }
 
@@ -27,6 +29,8 @@ const getEnvVars = () => {
     "NODE_ENV",
     "GOOGLE_CLIENT_ID",
     "GOOGLE_CLIENT_SECRET",
+    "FACEBOOK_APP_ID",
+    "FACEBOOK_APP_SECRET",
   ];
 
   const missingEnvVars = requiredEnvs.reduce((acc, envName) => {
@@ -58,4 +62,6 @@ export const {
   BE_ORIGIN,
   GOOGLE_CLIENT_ID,
   GOOGLE_CLIENT_SECRET,
+  FACEBOOK_APP_ID,
+  FACEBOOK_APP_SECRET,
 } = getEnvVars();

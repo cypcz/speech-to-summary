@@ -16,6 +16,7 @@ model User {
   email        String  @unique
   passwordHash String?
   googleId     String?
+  facebookId   String?
 
   tasks Task[]
 
@@ -37,6 +38,14 @@ model Task {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
+}
+
+model ServerSession {
+  sid    String   @id
+  sess   Json
+  expire DateTime
+
+  @@index([expire])
 }
 
 enum TaskStatus {

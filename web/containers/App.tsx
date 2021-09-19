@@ -17,7 +17,7 @@ export const App = () => {
   const { user, login, logout } = useAuthContext();
   const [loadingProgress, setLoadingProgress] = useState<number | null>(null);
 
-  const { data: tasks } = useQuery([GET_TASKS], getTasks);
+  const { data: tasks } = useQuery([GET_TASKS, user?.id], getTasks);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
@@ -68,6 +68,9 @@ export const App = () => {
             <button type="submit">login</button>
             <button type="button">
               <a href="http://localhost:4000/auth/google">google login</a>
+            </button>
+            <button type="button">
+              <a href="http://localhost:4000/auth/facebook">facebook login</a>
             </button>
           </Form>
         )}

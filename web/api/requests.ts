@@ -5,7 +5,7 @@ export const axios = Axios.create({
   withCredentials: true,
 });
 
-export type GetMeResult = { id: string; email: string; name: string }[];
+export type GetMeResult = { id: string; email: string; name: string };
 export const GET_ME = "/GET_ME";
 export const getMe = async () =>
   (await axios.get<GetMeResult>("/auth/me")).data;

@@ -82,7 +82,7 @@ const initiateSpeechToText = async ({
       name: fileName,
       fileUri: uri,
       status: TaskStatus.WAITING_FOR_TRANSCRIPT,
-      user: { connect: { id: "cktlsjpkh0009wzs723150oss" } },
+      user: { connect: { id: "cktqy00540004gbs79n460ovn" } },
     },
     select: { id: true, name: true, userId: true },
   });

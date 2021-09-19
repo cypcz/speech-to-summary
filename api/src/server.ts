@@ -35,7 +35,7 @@ app.use(
     saveUninitialized: false,
     store: new SessionStore({
       tableName: "ServerSession",
-      createTableIfMissing: true,
+      createTableIfMissing: false,
       conString: DATABASE_URL,
     }),
   })
