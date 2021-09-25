@@ -58,7 +58,7 @@ export const getYoutubeAudioAndPipeToGcs = async (
   req: Request,
   _res: Response
 ): Promise<any> => {
-  const url = (req.body as any).url;
+  const url = (req.body as any).link;
 
   const info = await ytdl.getBasicInfo(url);
   const {

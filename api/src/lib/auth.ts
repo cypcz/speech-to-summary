@@ -1,4 +1,5 @@
 import argon from "argon2";
+import { NextFunction, Request, Response } from "express";
 import passport from "passport";
 import { Strategy as FacebookStrategy } from "passport-facebook";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
@@ -16,7 +17,7 @@ const validatePassword = async (password: string, hash: string) => {
   return await argon.verify(hash, password);
 };
 
-const generatePasswordHash = async (password: string) => {
+export const generatePasswordHash = async (password: string) => {
   const hash = await argon.hash(password);
 
   return hash;
@@ -115,4 +116,13 @@ passport.deserializeUser(async (id: string, cb) => {
   cb(null, user);
 });
 
-export { passport, generatePasswordHash };
+export const loggedInGuard = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  if (!req.user) res.status(403).send("Unauthorized");
+  next();
+};
+
+export { passport };

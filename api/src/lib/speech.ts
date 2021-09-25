@@ -3,6 +3,7 @@ import { SpeechClient } from "@google-cloud/speech";
 import { google } from "@google-cloud/speech/build/protos/protos";
 import { Request, Response } from "express";
 import { prisma } from "../prisma";
+import { SessionUser } from "../utils/types";
 import { getSummaries } from "./openai";
 import {
   getYoutubeAudioAndPipeToGcs,
@@ -12,6 +13,7 @@ import {
 const client = new SpeechClient();
 
 interface Params {
+  user: SessionUser;
   uri: string;
   duration: number;
   languageCode: string;
@@ -28,6 +30,7 @@ export const initiateSummaryFromUpload = async (
   );
 
   const task = await initiateSpeechToText({
+    user: req.user!,
     uri,
     duration,
     fileName,
@@ -47,6 +50,7 @@ export const initiateSummaryFromYoutube = async (
   );
 
   const task = await initiateSpeechToText({
+    user: req.user!,
     uri,
     duration,
     fileName,
@@ -57,6 +61,7 @@ export const initiateSummaryFromYoutube = async (
 };
 
 const initiateSpeechToText = async ({
+  user,
   uri,
   languageCode,
   fileName,
@@ -82,7 +87,7 @@ const initiateSpeechToText = async ({
       name: fileName,
       fileUri: uri,
       status: TaskStatus.WAITING_FOR_TRANSCRIPT,
-      user: { connect: { id: "cktqy00540004gbs79n460ovn" } },
+      user: { connect: { id: user.id } },
     },
     select: { id: true, name: true, userId: true },
   });

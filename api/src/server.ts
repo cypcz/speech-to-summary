@@ -2,7 +2,7 @@ import PgStore from "connect-pg-simple";
 import cors from "cors";
 import express from "express";
 import session from "express-session";
-import { passport } from "./lib/auth";
+import { loggedInGuard, passport } from "./lib/auth";
 import { router as authRouter } from "./routes/auth";
 import { router as summaryRouter } from "./routes/summary";
 import { router as taskRouter } from "./routes/task";
@@ -44,7 +44,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use("/auth", authRouter);
-app.use("/summary", summaryRouter);
+app.use("/summary", loggedInGuard, summaryRouter);
 app.use("/tasks", taskRouter);
 
 app.listen(4000, () => {

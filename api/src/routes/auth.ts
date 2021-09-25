@@ -21,7 +21,7 @@ router.post("/logout", async (req, res) => {
 
 router.post("/register", async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { name, email, password } = req.body;
     const existingUser = await prisma.user.findUnique({ where: { email } });
 
     if (existingUser) throw new Error("User already exists!");
@@ -30,7 +30,7 @@ router.post("/register", async (req, res) => {
 
     await prisma.user.upsert({
       where: { email },
-      create: { email, passwordHash, name: "Ocas" },
+      create: { email, passwordHash, name },
       update: { passwordHash },
     });
 

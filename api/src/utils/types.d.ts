@@ -1,7 +1,14 @@
 declare module "@ffprobe-installer/ffprobe";
 
-declare namespace Express {
-  interface Request {
-    user?: { id: string; email: string; name: string };
+export interface SessionUser {
+  id: string;
+  email: string;
+  name: string;
+}
+declare global {
+  namespace Express {
+    interface Request {
+      user?: SessionUser;
+    }
   }
 }

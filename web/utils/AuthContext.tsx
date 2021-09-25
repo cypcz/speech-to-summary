@@ -7,11 +7,14 @@ import {
   login,
   LoginParams,
   logout,
-} from "../api/requests";
+  register,
+  RegisterParams,
+} from "../api";
 
 interface AuthContext {
   user?: GetMeResult;
   loading: boolean;
+  register: (params: RegisterParams) => void;
   login: (params: LoginParams) => void;
   logout: () => void;
 }
@@ -29,11 +32,18 @@ export const AuthContext: React.FC = ({ children }) => {
     onSettled: () => setLoading(false),
   });
 
+  const { mutate: handleRegister } = useMutation(register, {
+    onSuccess: () => {
+      queryClient.invalidateQueries([GET_ME]);
+    },
+  });
+
   const { mutate: handleLogin } = useMutation(login, {
     onSuccess: () => {
       queryClient.invalidateQueries([GET_ME]);
     },
   });
+
   const { mutate: handleLogout } = useMutation(logout, {
     onSuccess: () => {
       queryClient.invalidateQueries([GET_ME]);
@@ -45,6 +55,7 @@ export const AuthContext: React.FC = ({ children }) => {
       value={{
         user: me,
         loading,
+        register: handleRegister,
         login: handleLogin,
         logout: handleLogout,
       }}
