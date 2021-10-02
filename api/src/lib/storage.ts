@@ -1,5 +1,4 @@
 import { Storage } from "@google-cloud/storage";
-import { TGetSignedUrlParams } from "../schema";
 import { GCS_BUCKET_NAME } from "../utils/env";
 
 const storage = new Storage();
@@ -9,7 +8,7 @@ export const bucket = storage.bucket(GCS_BUCKET_NAME);
 export const generateV4UploadSignedUrl = async ({
   fileName,
   contentType,
-}: TGetSignedUrlParams) => {
+}: any) => {
   const [url] = await bucket.file(fileName).getSignedUrl({
     version: "v4",
     action: "write",

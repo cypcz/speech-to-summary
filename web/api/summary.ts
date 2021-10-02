@@ -19,6 +19,7 @@ export const summarizeFromFile = ({
   formData.append("file", file);
 
   const xhr = new XMLHttpRequest();
+  xhr.withCredentials = true;
 
   xhr.upload.addEventListener("progress", (ev) => {
     setLoadingProgress(ev.loaded / ev.total);

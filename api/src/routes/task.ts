@@ -9,7 +9,6 @@ router.get("/", async (req, res) => {
       where: {
         userId: req.user?.id || "",
       },
-      select: { id: true, transcript: true, summaries: true },
       orderBy: { createdAt: "desc" },
     })
   );

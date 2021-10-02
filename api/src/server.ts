@@ -45,7 +45,7 @@ app.use(passport.session());
 
 app.use("/auth", authRouter);
 app.use("/summary", loggedInGuard, summaryRouter);
-app.use("/tasks", taskRouter);
+app.use("/tasks", loggedInGuard, taskRouter);
 
 app.listen(4000, () => {
   console.log("Server listening on port 4000..");

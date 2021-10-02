@@ -1,4 +1,3 @@
-import { lighten } from "polished";
 import styled from "styled-components";
 
 export const Main = styled.div`
@@ -14,8 +13,8 @@ export const Main = styled.div`
     align-items: center;
     min-width: 50rem;
     min-height: 40rem;
-    border: 1px solid ${({ theme }) => lighten(0.22, theme.colors.primary)};
-    border-radius: 1rem;
+    border: ${({ theme }) => theme.borders.border};
+    border-radius: ${({ theme }) => theme.borders.radius};
   }
 `;
 
@@ -28,6 +27,9 @@ export const GoogleButton = styled.button`
   color: ${({ theme }) => theme.colors.secondary};
   margin-bottom: 1rem;
   cursor: pointer;
+  font-size: inherit;
+  font-family: inherit;
+  letter-spacing: inherit;
 `;
 
 export const FacebookButton = styled.button`
@@ -39,6 +41,9 @@ export const FacebookButton = styled.button`
   color: ${({ theme }) => theme.colors.secondary};
   margin-bottom: 1rem;
   cursor: pointer;
+  font-size: inherit;
+  font-family: inherit;
+  letter-spacing: inherit;
 `;
 
 export const Inputs = styled.div`

@@ -1,10 +1,9 @@
 import Head from "next/head";
-import Link from "next/link";
 import styled from "styled-components";
 import Typewriter from "typewriter-effect";
-import { Button } from "../components/Button";
+import { Footer } from "../components/Footer";
+import { Soundwave } from "../components/icons/Soundwave";
 import { Navbar } from "../components/Navbar";
-import { routes } from "../utils/constants";
 import { QUERY } from "../utils/theme";
 
 export const Landing = () => {
@@ -19,88 +18,81 @@ export const Landing = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <Background>
-        <Navbar logoLink={routes.landing}>
-          <Link href={routes.pricing} passHref>
-            <Button variant="text">Pricing</Button>
-          </Link>
-          <Link href={routes.login} passHref>
-            <Button>App</Button>
-          </Link>
-        </Navbar>
+      <Navbar />
 
-        <Section>
-          <Side>
-            <MainTitle>Quick and sharp summary of your content!</MainTitle>
+      <Main>
+        <LeftSide>
+          <Texts>
+            <Soundwave />
+            <MainTitle>Speech to summary</MainTitle>
             <SecondaryTitle>
-              StS is an AI powered assistant that takes in audio input and
+              STS is an AI powered assistant that takes in audio input and
               outputs a summary of key points you&apos;re more likely to
-              remember. Save your time by avoiding watching lengthy content, and
-              let StS do the legwork for you!
+              remember.
             </SecondaryTitle>
-          </Side>
-          <Side>
-            <VideoEmbed
-              id="ytplayer"
-              src="https://youtube.com/embed/oXEYhurdOhY?autoplay=1"
-              frameBorder="0"
-            />
-            <Typewriter
-              options={{
-                strings: ["Hello world"],
-                autoStart: true,
-                loop: true,
-                wrapperClassName: "type-writer",
-                cursorClassName: "type-writer",
-              }}
-            />
-          </Side>
-        </Section>
-      </Background>
+            <SecondaryTitle>
+              Save your time by avoiding watching lengthy content, and let StS
+              do the legwork for you.
+            </SecondaryTitle>
+          </Texts>
+        </LeftSide>
 
-      <footer>footer</footer>
+        <RightSide>
+          <VideoEmbed
+            id="ytplayer"
+            src="https://youtube.com/embed/oXEYhurdOhY?autoplay=1"
+            frameBorder="0"
+          />
+          <Typewriter
+            options={{
+              strings: ["Hello world"],
+              autoStart: true,
+              loop: true,
+              wrapperClassName: "type-writer",
+              cursorClassName: "type-writer",
+            }}
+          />
+        </RightSide>
+      </Main>
+
+      <Footer />
     </>
   );
 };
 
-const Background = styled.div`
-  background: rgb(180, 96, 255);
-  background: linear-gradient(
-    135deg,
-    rgba(180, 96, 255, 0.1) 0%,
-    rgba(180, 96, 255, 0.5) 100%
-  );
-`;
-
-const Section = styled.section`
+const Main = styled.main`
   display: flex;
   height: calc(100vh - 70px);
-  padding: 0 5rem;
-  gap: 3rem;
-
-  @media ${QUERY.belowSm} {
-    flex-direction: column;
-    gap: 0;
-  }
 `;
 
-const Side = styled.div`
+const LeftSide = styled.div`
+  background: ${({ theme }) => theme.colors.primary};
+  color: ${({ theme }) => theme.colors.secondary};
   display: flex;
   flex-direction: column;
-  margin-top: 100px;
-  align-items: center;
   flex: 1;
+  padding: 10rem 5rem 0 5rem;
+  gap: 3rem;
+`;
 
-  @media ${QUERY.belowSm} {
-    flex-direction: column;
-    flex: 0;
-  }
+const Texts = styled.div`
+  padding-left: 5rem;
+`;
+
+const RightSide = styled.div`
+  background: ${({ theme }) => theme.colors.secondary};
+  color: ${({ theme }) => theme.colors.primary};
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 10rem 5rem 0 5rem;
+  gap: 3rem;
 `;
 
 const VideoEmbed = styled.iframe`
   width: 640px;
   height: 360px;
-  margin-bottom: 50px;
+  margin-bottom: 5rem;
 
   @media ${QUERY.belowLg} {
     width: 320px;
@@ -109,9 +101,10 @@ const VideoEmbed = styled.iframe`
 `;
 
 const MainTitle = styled.h1`
-  font-size: 40px;
+  font-size: 4rem;
+  margin-top: 10rem;
 `;
 
 const SecondaryTitle = styled.h3`
-  font-size: 20px;
+  font-size: 2rem;
 `;

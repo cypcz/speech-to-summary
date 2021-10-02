@@ -1,16 +1,17 @@
 import Head from "next/head";
-import Link from "next/link";
 import { useQuery } from "react-query";
 import { getTasks, GET_TASKS } from "../api";
-import { Button } from "../components/Button";
 import { Navbar } from "../components/Navbar";
+import { Table } from "../components/Table/Table";
 import { useAuthContext } from "../utils/AuthContext";
 import { withAuth } from "../utils/authHoc";
-import { routes } from "../utils/constants";
 
 export const Tasks = withAuth(() => {
-  const { user, logout } = useAuthContext();
-  const { data: tasks } = useQuery([GET_TASKS, user?.id], getTasks);
+  const { user } = useAuthContext();
+  const { data: tasks = [], isLoading } = useQuery(
+    [GET_TASKS, user?.id],
+    getTasks
+  );
 
   return (
     <>
@@ -24,14 +25,16 @@ export const Tasks = withAuth(() => {
       </Head>
 
       <main>
-        <Navbar logoLink={routes.app}>
-          <Link href={routes.tasks} passHref>
-            <Button variant="text">my tasks</Button>
-          </Link>
-          <Button onClick={logout} variant="outlined">
-            logout
-          </Button>
-        </Navbar>
+        <Navbar />
+
+        <Table
+          columns={[
+            { field: "name", flex: 1 },
+            { field: "status", flex: 1 },
+          ]}
+          data={tasks}
+          loading={isLoading}
+        />
 
         {tasks?.map((task) => (
           <div
@@ -45,8 +48,6 @@ export const Tasks = withAuth(() => {
           </div>
         ))}
       </main>
-
-      <footer>footer</footer>
     </>
   );
 });

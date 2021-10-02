@@ -1,5 +1,4 @@
 import Head from "next/head";
-import Link from "next/link";
 import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { useMutation } from "react-query";
@@ -10,7 +9,6 @@ import { StyledInput } from "../components/form/Input";
 import { Navbar } from "../components/Navbar";
 import { useAuthContext } from "../utils/AuthContext";
 import { withAuth } from "../utils/authHoc";
-import { routes } from "../utils/constants";
 
 enum TaskType {
   UPLOAD,
@@ -31,7 +29,12 @@ export const App = withAuth(() => {
     []
   );
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
+  const { getRootProps, getInputProps } = useDropzone({
+    onDrop,
+    accept: ["audio/*", "video/*"],
+    maxFiles: 1,
+    multiple: false,
+  });
 
   return (
     <>
@@ -45,25 +48,20 @@ export const App = withAuth(() => {
       </Head>
 
       <main>
-        <Navbar logoLink={routes.app} user={user}>
-          <Link href={routes.tasks} passHref>
-            <Button variant="text">my tasks</Button>
-          </Link>
-          <Button onClick={logout} variant="outlined">
-            logout
-          </Button>
-        </Navbar>
+        <Navbar />
         <InputGroup>
           <Buttons>
             <Button
-              variant={taskType === TaskType.YOUTUBE ? "contained" : "outlined"}
+              variant={taskType === TaskType.YOUTUBE ? "contained" : "text"}
               onClick={() => setTaskType(TaskType.YOUTUBE)}
+              width="16rem"
             >
               youtube link
             </Button>
             <Button
-              variant={taskType === TaskType.UPLOAD ? "contained" : "outlined"}
+              variant={taskType === TaskType.UPLOAD ? "contained" : "text"}
               onClick={() => setTaskType(TaskType.UPLOAD)}
+              width="16rem"
             >
               upload file
             </Button>
@@ -77,7 +75,7 @@ export const App = withAuth(() => {
                 onChange={(e) => setYoutubeLink(e.target.value)}
               />
               <Button onClick={() => handleYoutubeTask(youtubeLink)}>
-                go!
+                start
               </Button>
             </InputWrapper>
           )}
@@ -86,11 +84,7 @@ export const App = withAuth(() => {
             <UploadWrapper>
               <div {...getRootProps()}>
                 <input {...getInputProps()} />
-                {isDragActive ? (
-                  <p>Drop the files here ...</p>
-                ) : (
-                  <p>Drag drop some files here, or click to select files</p>
-                )}
+                <p>Drag drop some files here, or click to select files</p>
               </div>
             </UploadWrapper>
           )}
@@ -100,8 +94,6 @@ export const App = withAuth(() => {
           <div>Progress: {(loadingProgress * 100).toFixed(0)}%</div>
         )}
       </main>
-
-      <footer>footer</footer>
     </>
   );
 });
@@ -128,13 +120,16 @@ const UploadWrapper = styled.div`
   display: flex;
   justify-content: center;
   border: 1px solid ${({ theme }) => theme.colors.primary};
+  background-color: ${({ theme }) => theme.colors.gray};
   padding: 0 2rem;
   margin-top: 2rem;
   border-radius: 6px;
   cursor: pointer;
+  font-style: italic;
 `;
 
 const Buttons = styled.div`
   display: flex;
   gap: 1rem;
+  margin-top: 2rem;
 `;

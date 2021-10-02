@@ -10,8 +10,8 @@
     "noImplicitAny": true,
     "noImplicitReturns": true,
     "resolveJsonModule": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "typeRoots": ["src/utils/types.d.ts"]
   },
-  "lib": ["es2015"],
-  "files": ["src/utils/types.d.ts"]
+  "lib": ["es2015"]
 }

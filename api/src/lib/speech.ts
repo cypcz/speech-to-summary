@@ -1,9 +1,8 @@
-import { TaskStatus } from ".prisma/client";
+import { Task, TaskStatus } from ".prisma/client";
 import { SpeechClient } from "@google-cloud/speech";
 import { google } from "@google-cloud/speech/build/protos/protos";
 import { Request, Response } from "express";
 import { prisma } from "../prisma";
-import { SessionUser } from "../utils/types";
 import { getSummaries } from "./openai";
 import {
   getYoutubeAudioAndPipeToGcs,
@@ -13,65 +12,40 @@ import {
 const client = new SpeechClient();
 
 interface Params {
-  user: SessionUser;
-  uri: string;
-  duration: number;
+  task: Task;
   languageCode: string;
-  fileName: string;
 }
 
 export const initiateSummaryFromUpload = async (
   req: Request,
   res: Response
 ) => {
-  const { uri, duration, fileName } = await transcribeFileAndPipeToGcs(
-    req,
-    res
-  );
+  const task = await transcribeFileAndPipeToGcs(req, res);
 
-  const task = await initiateSpeechToText({
-    user: req.user!,
-    uri,
-    duration,
-    fileName,
+  await initiateSpeechToText({
+    task,
     languageCode: "en-US",
   });
-
-  res.json(task);
 };
 
 export const initiateSummaryFromYoutube = async (
   req: Request,
   res: Response
 ) => {
-  const { uri, duration, fileName } = await getYoutubeAudioAndPipeToGcs(
-    req,
-    res
-  );
+  const task = await getYoutubeAudioAndPipeToGcs(req, res);
 
-  const task = await initiateSpeechToText({
-    user: req.user!,
-    uri,
-    duration,
-    fileName,
+  await initiateSpeechToText({
+    task,
     languageCode: "en-US",
   });
-
-  res.json(task);
 };
 
-const initiateSpeechToText = async ({
-  user,
-  uri,
-  languageCode,
-  fileName,
-  duration,
-}: Params) => {
+const initiateSpeechToText = async ({ task, languageCode }: Params) => {
   const speechRequest:
     | google.cloud.speech.v1.IRecognizeRequest
     | google.cloud.speech.v1.ILongRunningRecognizeRequest = {
     audio: {
-      uri,
+      uri: task.fileUri,
     },
     config: {
       encoding: "FLAC",
@@ -82,14 +56,11 @@ const initiateSpeechToText = async ({
 
   const [operation] = await client.longRunningRecognize(speechRequest);
 
-  const task = await prisma.task.create({
+  await prisma.task.update({
+    where: { id: task.id },
     data: {
-      name: fileName,
-      fileUri: uri,
       status: TaskStatus.WAITING_FOR_TRANSCRIPT,
-      user: { connect: { id: user.id } },
     },
-    select: { id: true, name: true, userId: true },
   });
 
   operation.name && pollForTranscribeResult(operation.name, task.id);
